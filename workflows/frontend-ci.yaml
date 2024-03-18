@@ -8,9 +8,10 @@ on:
       - 'starter/frontend/**'
   workflow_dispatch:
 
-env:
-  # Set Node.js Version
-  NODE_VERSION: '18.x'
+env: 
+  NODE_VERSION: 18 # Set Node.js Version
+  ECR_REPO: #input your name here
+  REACT_API_URL: #input your name here
 
 jobs:
   Lint-Job:
@@ -99,7 +100,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           # aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
       # AWS ECR Login
       - name: Login to Amazon ECR
         id: login-ecr
