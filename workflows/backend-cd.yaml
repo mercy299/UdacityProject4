@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  AWS_REGION: us-east-1
+  # AWS_REGION: us-east-1
   ECR_REPO: #input your name
   EKS_CLUSTER_NAME: #input your name
   PYTHON_VERSION: "3.9"
@@ -75,6 +75,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           # aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.AWS_REGION }}
+          
       # AWS ECR Login
       - name: Login to Amazon ECR
         id: login-ecr
@@ -86,7 +87,7 @@ jobs:
           REPOSITORY: ${{ env.ECR_REPO }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build --build-arg REACT_APP_MOVIE_API_URL=${{ env.REACT_API_URL }} -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./frontend
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./backend
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
         if: success()   # error handling
 
@@ -108,7 +109,7 @@ jobs:
       - name: Update kube config
         run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
 
-      - name: Verify cluster configuration  # for Debugging
+      - name: Verifying cluster configuration  # for Debugging
         run: kubectl cluster-info
         
       - name: Deploy to EKS
