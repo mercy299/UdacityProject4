@@ -1,0 +1,115 @@
+name: Frontend Continous Integration
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'starter/frontend/**'
+  workflow_dispatch:
+
+env:
+  # Set Node.js Version
+  NODE_VERSION: '18.x'
+
+jobs:
+  Lint-Job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{env.NODE_VERSION}}
+
+      - name: Cache restore
+        uses: ylemkimon/cache-restore@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: cd starter/frontend && npm ci
+
+      - name: Run linter
+        id: lint
+        run: cd starter/frontend && npm run lint --fix
+
+  Test-Job: 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{env.NODE_VERSION}}
+
+      - name: Cache restore
+        uses: ylemkimon/cache-restore@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Installing dependencies
+        run: cd starter/frontend && npm ci
+
+      - name: Tests
+        id: tests
+        run: cd starter/frontend && npm run test
+
+  Build-Job: 
+    runs-on: ubuntu-latest
+    needs: [Lint-Job, Test-Job]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{env.NODE_VERSION}}
+
+      - name: Restore cache
+        uses: actions/cache@v3
+        id: npm-cache
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: cd starter/frontend && npm ci
+
+      - name: Tests
+        id: tests
+        run: cd starter/frontend && npm run test
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+      # AWS ECR Login
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ env.ECR_REPO }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build --build-arg REACT_APP_MOVIE_API_URL=${{ env.REACT_API_URL }} -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./frontend
+        # error handling
+        if: success()

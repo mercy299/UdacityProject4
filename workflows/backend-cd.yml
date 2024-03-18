@@ -1,0 +1,117 @@
+name: Backend Continous Deployment
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'starter/backend/**'
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPO: #input your name
+  EKS_CLUSTER_NAME: #input your name
+  PYTHON_VERSION: "3.9"
+  KUBECTL_VERSION: "v1.28.0"    # same version as k8 on EKS
+
+jobs: 
+  Lint-Job: 
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: python environment setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip' # caching pip dependencies
+
+      - name: Install dependencies
+        run: |
+            python -m pip install --upgrade pip
+            pip install -r starter/backend/requirements.txt
+
+      - name: code linting
+        uses: py-actions/flake8@v2
+        with:
+          ignore: "E501"   #ignores error E501 which flags any lines >79 characters
+
+  Test-Job: 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: python environment setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip' 
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      # Run the tests
+      - name: Test with pytest
+        run: |
+          cd backend && pip install pytest
+          pytest
+
+  Build-and-Deploy-Job: 
+    runs-on: ubuntu-latest
+    needs: [Lint-Job, Test-Job]
+    steps: 
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+      # AWS ECR Login
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ env.ECR_REPO }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build --build-arg REACT_APP_MOVIE_API_URL=${{ env.REACT_API_URL }} -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./frontend
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+        if: success()   # error handling
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: ${{ env.KUBECTL_VERSION }} # default is latest stable
+        id: kubectl-tool-installer
+
+      - name: Print kubectl version
+        run: kubectl version --client
+
+      - name: Update AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+          aws --version
+
+      - name: Update kube config
+        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+
+      - name: Verify cluster configuration  # for Debugging
+        run: kubectl cluster-info
+        
+      - name: Deploy to EKS
+        run: |
+          kustomize build ./backend/k8s | kubectl apply -f -
+      
