@@ -10,7 +10,7 @@ on:
 
 env: 
   NODE_VERSION: 18 # Set Node.js Version
-  ECR_REPO: #input your name here
+  ECR_REPO: udacityproject4
   REACT_API_URL: #input your name here
 
 jobs:
