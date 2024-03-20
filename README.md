@@ -392,7 +392,7 @@ docker stop
 
 ### Deploying Kubernetes manifests
 
-In order to build the Kubernetes manifests correctly, the team uses `kustomize` in the following way:
+In order to build Kubernetes manifests correctly, the team uses `kustomize` in the following way:
 
 ```bash
 cd starter/backend/k8s
