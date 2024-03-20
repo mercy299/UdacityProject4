@@ -390,7 +390,7 @@ docker logs -f mp-backend
 docker stop
 ```
 
-### Deploy Kubernetes manifests
+### Deploying Kubernetes manifests
 
 In order to build the Kubernetes manifests correctly, the team uses `kustomize` in the following way:
 
