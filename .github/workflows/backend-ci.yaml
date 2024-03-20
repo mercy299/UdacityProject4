@@ -37,6 +37,8 @@ jobs:
 
   Test-Job: 
     runs-on: ubuntu-latest
+    env: 
+      PYTHON_VERSION: "3.9"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -61,6 +63,8 @@ jobs:
   Build-Job: 
     runs-on: ubuntu-latest
     needs: [Lint-Job, Test-Job]
+    env: 
+      PYTHON_VERSION: "3.9"
     steps: 
       - name: Checkout code
         uses: actions/checkout@v4
