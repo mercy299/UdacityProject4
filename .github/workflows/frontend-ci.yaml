@@ -11,7 +11,7 @@ on:
 env: 
   NODE_VERSION: 18 # Set Node.js Version
   ECR_REPO: udacityproject4
-  REACT_API_URL: #input your name here
+  REACT_API_URL: http://localhost:5000
 
 jobs:
   Lint-Job:
