@@ -386,7 +386,7 @@ docker logs -f mp-backend
 # Expected output
 {"movies":[{"id":"123","title":"Top Gun: Maverick"},{"id":"456","title":"Sonic the Hedgehog"},{"id":"789","title":"A Quiet Place"}]}
 
-# Stop the application
+# Stopping the application
 docker stop
 ```
 
