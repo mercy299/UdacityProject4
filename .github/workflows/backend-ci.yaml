@@ -1,4 +1,4 @@
-name: Backend Continous Integration
+name: Backend Continuous Integration
 
 on:
   pull_request:
@@ -7,8 +7,6 @@ on:
     paths:
       - 'starter/backend/**'
   workflow_dispatch:
-
-
 
 jobs: 
   Lint-Job:
@@ -43,7 +41,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-       - name: python environment setup
+      - name: python environment setup
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -72,7 +70,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{env.PYTHON_VERSION}}
+          python-version: ${{ env.PYTHON_VERSION }}
     
       - name: Install dependencies
         run: |
@@ -104,4 +102,3 @@ jobs:
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./backend
         if: success()   # error handling
-  
