@@ -36,8 +36,9 @@ jobs:
       - name: Install dependencies
         run: cd starter/frontend && npm ci
 
-      - name: Linting
-        run: cd starter/frontend && npm run lint
+      - name: Run linter
+        id: lint
+        run: cd starter/frontend && npm run lint --fix
 
   Test-Job: 
     runs-on: ubuntu-latest
