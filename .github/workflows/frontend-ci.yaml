@@ -10,7 +10,7 @@ on:
 env:
   NODE_VERSION: 18
   AWS_REGION: us-east-1
-  ECR_REPO: movie-picture-frontend-repo
+  ECR_REPO: udacityproject4
   REACT_API_URL: http://localhost:5000  #update this
 
 jobs:
@@ -33,10 +33,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Install dependencies
-        run: cd frontend && npm ci
+        run: cd starter/frontend && npm ci
       # Run the linter
       - name: Linting
-        run: cd frontend && npm run lint
+        run: cd starter/frontend && npm run lint
   Frontend-Test:
     runs-on: ubuntu-latest
     steps:
@@ -56,10 +56,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Install dependencies
-        run: cd frontend && npm ci
+        run: cd starter/frontend && npm ci
       # Run the tests
       - name: Testing
-        run: cd frontend && npm run test
+        run: cd starter/frontend && npm run test
   Frontend-Build:
     needs: [Frontend-Lint, Frontend-Test]
     runs-on: ubuntu-latest
