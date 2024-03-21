@@ -84,6 +84,6 @@ jobs:
           REPOSITORY: ${{ env.ECR_REPO }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build --build-arg REACT_APP_MOVIE_API_URL=${{ env.REACT_API_URL }} -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./frontend
+          docker build --build-arg REACT_APP_MOVIE_API_URL=${{ env.REACT_API_URL }} -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .starter//frontend
         # error handling
         if: success()
