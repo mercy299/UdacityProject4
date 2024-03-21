@@ -1,30 +1,30 @@
-name: Frontend Continous Integration
+name: Frontend Continuous Integration
 
+# Triggers (manual & auto)
 on:
+  workflow_dispatch:
   pull_request:
     branches:
-      - main
-    paths:
-      - 'starter/frontend/**'
-  workflow_dispatch:
+      - master
 
-env: 
-  NODE_VERSION: 18 # Set Node.js Version
-  ECR_REPO: udacityproject4
-  REACT_API_URL: http://localhost:5000
+env:
+  NODE_VERSION: 18
+  AWS_REGION: us-east-1
+  ECR_REPO: movie-picture-frontend-repo
+  REACT_API_URL: http://localhost:5000  #update this
 
 jobs:
-  Lint-Job:
+  Frontend-Lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Set up Node.js
+      # set up node.js environment
+      - name: Node.js environment setup
         uses: actions/setup-node@v4
         with:
-          node-version: ${{env.NODE_VERSION}}
-
+          node-version: ${{ env.NODE_VERSION }}
+      # Restore cache && Install dependencies
       - name: Cache restore
         uses: ylemkimon/cache-restore@v2
         with:
@@ -32,25 +32,22 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-
       - name: Install dependencies
-        run: cd starter/frontend && npm ci
-
-      - name: Run linter
-        id: lint
-        run: cd starter/frontend && npm run lint --fix
-
-  Test-Job: 
+        run: cd frontend && npm ci
+      # Run the linter
+      - name: Linting
+        run: cd frontend && npm run lint
+  Frontend-Test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Setup NodeJS
+      # set up node.js environment
+      - name: Node.js environment setup
         uses: actions/setup-node@v4
         with:
-          node-version: ${{env.NODE_VERSION}}
-
+          node-version: ${{ env.NODE_VERSION }}
+      # Restore cache && Install dependencies
       - name: Cache restore
         uses: ylemkimon/cache-restore@v2
         with:
@@ -58,49 +55,25 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-
-      - name: Installing dependencies
-        run: cd starter/frontend && npm ci
-
-      - name: Tests
-        id: tests
-        run: cd starter/frontend && npm run test
-
-  Build-Job: 
+      - name: Install dependencies
+        run: cd frontend && npm ci
+      # Run the tests
+      - name: Testing
+        run: cd frontend && npm run test
+  Frontend-Build:
+    needs: [Frontend-Lint, Frontend-Test]
     runs-on: ubuntu-latest
-    needs: [Lint-Job, Test-Job]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Setup NodeJS
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{env.NODE_VERSION}}
-
-      - name: Restore cache
-        uses: actions/cache@v3
-        id: npm-cache
-        with:
-          path: ${{ steps.npm-cache-dir.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install dependencies
-        run: cd starter/frontend && npm ci
-
-      - name: Tests
-        id: tests
-        run: cd starter/frontend && npm run test
-
+      # Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           # aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
       # AWS ECR Login
       - name: Login to Amazon ECR
         id: login-ecr
