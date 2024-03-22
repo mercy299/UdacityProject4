@@ -87,7 +87,7 @@ jobs:
           REPOSITORY: ${{ env.ECR_REPO }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./backend
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./starter/backend
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
         if: success()   # error handling
 
@@ -114,5 +114,5 @@ jobs:
         
       - name: Deploy to EKS
         run: |
-          kustomize build ./backend/k8s | kubectl apply -f -
+          kustomize build ./starter/backend/k8s | kubectl apply -f -
       
