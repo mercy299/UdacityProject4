@@ -61,7 +61,6 @@ jobs:
         run: cd starter/frontend && npm ci
 
       - name: Tests
-        id: tests
         run: cd starter/frontend && npm run test
 
   Build-Job: 
