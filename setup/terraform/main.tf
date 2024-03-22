@@ -328,3 +328,8 @@ data "aws_iam_policy_document" "github_policy" {
     resources = ["*"]
   }
 }
+
+resource "aws_iam_user_policy_attachment" "github_policy" {
+  user       = aws_iam_user.github_action_user.name
+  policy_arn = aws_iam_policy.github_policy.arn
+}

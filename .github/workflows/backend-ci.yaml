@@ -8,11 +8,16 @@ on:
       - 'starter/backend/**'
   workflow_dispatch:
 
+env:
+  AWS_REGION: us-east-1
+  ECR_REPO: udacityproject4-backend
+  EKS_CLUSTER_NAME: backend-cluster
+  PYTHON_VERSION: "3.9"
+
+
 jobs: 
   Lint-Job:
     runs-on: ubuntu-latest
-    env: 
-      PYTHON_VERSION: "3.9"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
