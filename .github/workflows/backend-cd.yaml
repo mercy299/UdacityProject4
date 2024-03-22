@@ -11,7 +11,7 @@ on:
 env:
   # AWS_REGION: us-east-1
   ECR_REPO: backend
-  EKS_CLUSTER_NAME: cluster
+  # EKS_CLUSTER_NAME: cluster
   PYTHON_VERSION: "3.9"
   KUBECTL_VERSION: "v1.28.0"    # same version as k8 on EKS
 
@@ -107,7 +107,7 @@ jobs:
           aws --version
 
       - name: Update kube config
-        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+        run: aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
 
       - name: Verifying cluster configuration  # for Debugging
         run: kubectl cluster-info
